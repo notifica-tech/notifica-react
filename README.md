@@ -22,9 +22,8 @@ import { NotificaProvider, NotificaBell } from '@notifica/react';
 function App() {
   return (
     <NotificaProvider
-      apiKey="nk_live_sua_chave_aqui"
+      publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
-      apiUrl="https://api.usenotifica.com.br"
     >
       <header>
         <NotificaBell />
@@ -38,6 +37,55 @@ Isso exibe um ícone de sino com badge de contagem de não lidas. Ao clicar, abr
 
 ---
 
+## Autenticação (v0.2.0+)
+
+O SDK usa **publishable keys** — chaves públicas seguras para uso no frontend.
+
+| Prefixo | Ambiente | Origin restriction |
+|---------|----------|-------------------|
+| `pk_live_...` | Produção | ✅ Apenas origens permitidas no dashboard |
+| `pk_test_...` | Desenvolvimento | ❌ Aceita qualquer origin (localhost, etc.) |
+
+As chamadas enviam os headers:
+- `X-Notifica-Publishable-Key` — identifica o tenant
+- `X-Notifica-Subscriber-Id` — identifica o subscriber
+
+> **Nunca exponha secret keys no frontend.** Use `publishableKey` para o SDK React e secret keys apenas no backend.
+
+### Dev Mode
+
+Para desenvolvimento local, use uma chave de teste:
+
+```tsx
+<NotificaProvider
+  publishableKey="pk_test_..."
+  subscriberId="user_123"
+  apiUrl="http://localhost:4000"
+/>
+```
+
+### Origin Allowlist
+
+Em produção (`pk_live_...`), o servidor valida a origem da request. Configure as origens permitidas no [dashboard do Notifica](https://app.usenotifica.com.br) → Settings → API Keys → Origin allowlist.
+
+Se a origem não estiver na allowlist, o SDK lança `NotificaOriginError` com uma mensagem amigável.
+
+### Migração de `apiKey` (deprecated)
+
+Se você usava `apiKey` na v0.1.x, ele ainda funciona como alias por 1 versão menor:
+
+```tsx
+// ❌ Deprecated (v0.1.x)
+<NotificaProvider apiKey="nk_live_..." subscriberId="..." />
+
+// ✅ Novo (v0.2.0+)
+<NotificaProvider publishableKey="pk_live_..." subscriberId="..." />
+```
+
+O SDK emite um `console.warn` ao detectar `apiKey`. Será removido na v0.3.0.
+
+---
+
 ## Componentes
 
 ### `<NotificaProvider>`
@@ -46,7 +94,7 @@ Provedor de contexto obrigatório. Deve envolver todos os componentes e hooks do
 
 ```tsx
 <NotificaProvider
-  apiKey="nk_live_..."
+  publishableKey="pk_live_..."
   subscriberId="user_123"
   apiUrl="https://api.usenotifica.com.br"  // opcional (padrão: https://api.usenotifica.com.br)
   pollingInterval={30000}                   // opcional (padrão: 30s)
@@ -59,12 +107,13 @@ Provedor de contexto obrigatório. Deve envolver todos os componentes e hooks do
 
 | Prop | Tipo | Padrão | Descrição |
 |------|------|--------|-----------|
-| `apiKey` | `string` | — | **Obrigatório.** Chave de API do Notifica |
+| `publishableKey` | `string` | — | **Obrigatório.** Chave pública do Notifica (`pk_live_...` ou `pk_test_...`) |
 | `subscriberId` | `string` | — | **Obrigatório.** ID do assinante (subscriber) |
 | `apiUrl` | `string` | `https://api.usenotifica.com.br` | URL base da API |
 | `pollingInterval` | `number` | `30000` | Intervalo de polling em ms (0 = desabilitar) |
 | `locale` | `'pt-BR' \| 'en'` | `'pt-BR'` | Locale para labels |
 | `labels` | `Partial<NotificaLabels>` | — | Override parcial de labels (veja seção i18n) |
+| ~~`apiKey`~~ | `string` | — | ⚠️ Deprecated. Use `publishableKey`. Será removido na v0.3.0. |
 
 ### `<NotificaBell>`
 
@@ -169,6 +218,28 @@ const { config, labels, apiFetch } = useNotifica();
 
 // Exemplo: chamar a API diretamente
 const data = await apiFetch('/v1/subscribers/user_123/notifications?limit=5');
+```
+
+---
+
+## Error Handling
+
+### `NotificaOriginError`
+
+Thrown when the API returns 403 due to origin restriction:
+
+```tsx
+import { NotificaOriginError } from '@notifica/react';
+
+try {
+  await apiFetch('/v1/...');
+} catch (err) {
+  if (err instanceof NotificaOriginError) {
+    // err.status === 403
+    // err.message includes: origin, allowlist instructions, dev mode hint
+    showToast(err.message);
+  }
+}
 ```
 
 ---
@@ -329,10 +400,11 @@ interface NotificaNotification {
 ## Requisitos Técnicos
 
 - **Zero dependências runtime** — apenas React como peer dependency
-- **< 50KB gzipped** — bundle otimizado
+- **< 50KB gzipped** — bundle otimizado (~32KB ESM)
 - **TypeScript strict mode** — tipos completos exportados
 - **CSS-in-JS via CSS custom properties** — sem styled-components/Tailwind
 - **Sem window/document no render** — SSR compatível
+- **Secure by default** — publishable keys, never secret keys in the browser
 
 ---
 

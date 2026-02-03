@@ -17,7 +17,7 @@ export function useNotifica(): NotificaContextValue {
   if (!ctx) {
     throw new Error(
       '[Notifica] useNotifica() must be used inside a <NotificaProvider>. ' +
-        'Wrap your app or component tree with <NotificaProvider apiKey="..." subscriberId="...">.'
+        'Wrap your app or component tree with <NotificaProvider publishableKey="..." subscriberId="...">.'
     );
   }
   return ctx;

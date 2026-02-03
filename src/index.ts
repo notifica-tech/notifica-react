@@ -15,6 +15,9 @@ export { useUnreadCount } from './hooks/use-unread-count';
 export { lightTokens, darkTokens, tokensToCSS } from './styles/tokens';
 export { styles } from './styles/default-theme';
 
+// ── Errors ────────────────────────────────────────────
+export { NotificaOriginError } from './types';
+
 // ── Types ────────────────────────────────────────────
 export type {
   NotificaNotification,
