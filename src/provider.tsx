@@ -50,6 +50,14 @@ export const NotificaContext = createContext<NotificaContextValue | null>(null);
 
 let apiKeyDeprecationWarned = false;
 
+declare const process:
+  | {
+      env?: {
+        NODE_ENV?: string;
+      };
+    }
+  | undefined;
+
 // ── Provider ─────────────────────────────────────────
 
 const DEFAULT_API_URL = 'https://api.usenotifica.com.br';
@@ -73,8 +81,12 @@ export function NotificaProvider({
     if (publishableKey) return publishableKey;
 
     if (apiKey) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!apiKeyDeprecationWarned) {
+      const isDev =
+        typeof process !== 'undefined' &&
+        !!process?.env?.NODE_ENV &&
+        process.env.NODE_ENV !== 'production';
+
+      if (isDev && !apiKeyDeprecationWarned) {
         apiKeyDeprecationWarned = true;
         console.warn(
           '[Notifica] The `apiKey` prop is deprecated and will be removed in 0.3.0. ' +
