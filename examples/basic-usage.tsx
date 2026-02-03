@@ -1,7 +1,13 @@
 /**
- * @notifica/react — Exemplo de uso básico
+ * @notifica/react — Exemplo de uso básico (v0.2.0+)
  *
- * Este arquivo demonstra as três formas principais de usar o SDK:
+ * Usa `publishableKey` (chave pública) em vez de `apiKey`.
+ *
+ * Modos:
+ *   - pk_live_... → produção (requer origin allowlist no dashboard)
+ *   - pk_test_... → dev mode (aceita localhost, sem restrição de origin)
+ *
+ * Três formas principais:
  * 1. Bell com popover (mais comum)
  * 2. Inbox standalone
  * 3. Hooks para UI customizada
@@ -23,7 +29,7 @@ import {
 function AppComBell() {
   return (
     <NotificaProvider
-      apiKey="nk_live_sua_chave_aqui"
+      publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
       apiUrl="https://api.usenotifica.com.br"
     >
@@ -34,12 +40,26 @@ function AppComBell() {
   );
 }
 
-// ── 2. Inbox standalone ──────────────────────────────
+// ── 2. Dev mode (chave de teste) ─────────────────────
+
+function AppDevMode() {
+  return (
+    <NotificaProvider
+      publishableKey="pk_test_dev_key"
+      subscriberId="user_123"
+      apiUrl="http://localhost:4000"
+    >
+      <NotificaBell />
+    </NotificaProvider>
+  );
+}
+
+// ── 3. Inbox standalone ──────────────────────────────
 
 function PaginaNotificacoes() {
   return (
     <NotificaProvider
-      apiKey="nk_live_sua_chave_aqui"
+      publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
     >
       <div style={{ maxWidth: 600, margin: '2rem auto' }}>
@@ -57,7 +77,7 @@ function PaginaNotificacoes() {
   );
 }
 
-// ── 3. Hooks para UI customizada ─────────────────────
+// ── 4. Hooks para UI customizada ─────────────────────
 
 function ContadorCustomizado() {
   const { count } = useUnreadCount();
@@ -115,7 +135,7 @@ function ListaCustomizada() {
 function AppComHooksCustomizados() {
   return (
     <NotificaProvider
-      apiKey="nk_live_sua_chave_aqui"
+      publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
       pollingInterval={15_000}
       locale="pt-BR"
@@ -126,16 +146,15 @@ function AppComHooksCustomizados() {
   );
 }
 
-// ── 4. Dark mode ─────────────────────────────────────
+// ── 5. Dark mode ─────────────────────────────────────
 
 function AppDarkMode() {
   return (
     <>
-      {/* Injeta tokens dark mode via CSS */}
       <style>{tokensToCSS(darkTokens)}</style>
 
       <NotificaProvider
-        apiKey="nk_live_sua_chave_aqui"
+        publishableKey="pk_live_sua_chave_aqui"
         subscriberId="user_123"
       >
         <NotificaBell />
@@ -144,12 +163,12 @@ function AppDarkMode() {
   );
 }
 
-// ── 5. i18n (English) ────────────────────────────────
+// ── 6. i18n (English) ────────────────────────────────
 
 function AppIngles() {
   return (
     <NotificaProvider
-      apiKey="nk_live_sua_chave_aqui"
+      publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
       locale="en"
     >
@@ -158,12 +177,12 @@ function AppIngles() {
   );
 }
 
-// ── 6. Labels customizadas ───────────────────────────
+// ── 7. Labels customizadas ───────────────────────────
 
 function AppLabelsCustom() {
   return (
     <NotificaProvider
-      apiKey="nk_live_sua_chave_aqui"
+      publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
       labels={{
         notifications: 'Central de Avisos',
@@ -177,12 +196,12 @@ function AppLabelsCustom() {
   );
 }
 
-// ── 7. Bell com ícone e badge customizados ───────────
+// ── 8. Bell com ícone e badge customizados ───────────
 
 function AppBellCustom() {
   return (
     <NotificaProvider
-      apiKey="nk_live_sua_chave_aqui"
+      publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
     >
       <NotificaBell
@@ -220,6 +239,7 @@ function AppBellCustom() {
 
 export {
   AppComBell,
+  AppDevMode,
   PaginaNotificacoes,
   AppComHooksCustomizados,
   AppDarkMode,
