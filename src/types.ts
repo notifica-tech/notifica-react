@@ -38,10 +38,10 @@ export interface NotificaMarkAllReadResponse {
 /** Supported locales for i18n labels. */
 export type NotificaLocale = 'pt-BR' | 'en';
 
-/** Provider configuration. */
+/** Provider configuration (resolved internally). */
 export interface NotificaConfig {
-  /** API key (e.g. "nk_live_...") */
-  apiKey: string;
+  /** Publishable key (e.g. "pk_live_...") */
+  publishableKey: string;
   /** Subscriber ID to fetch notifications for */
   subscriberId: string;
   /** Base API URL (default: "https://api.usenotifica.com.br") */
@@ -68,11 +68,27 @@ export interface NotificaLabels {
   daysAgo: (n: number) => string;
 }
 
+// ── Errors ───────────────────────────────────────────
+
+/** Error subclass for origin-restricted 403 responses. */
+export class NotificaOriginError extends Error {
+  public readonly status = 403;
+
+  constructor(origin: string) {
+    super(
+      `[Notifica] This origin (${origin}) is not allowed to access the API. ` +
+        'Add it to the origin allowlist in your Notifica dashboard, ' +
+        'or use dev mode (pk_test_...) for local development.'
+    );
+    this.name = 'NotificaOriginError';
+  }
+}
+
 // ── Context ──────────────────────────────────────────
 
 /** Value provided by NotificaProvider context. */
 export interface NotificaContextValue {
-  config: Required<Pick<NotificaConfig, 'apiKey' | 'subscriberId' | 'apiUrl' | 'pollingInterval' | 'locale'>>;
+  config: Required<Pick<NotificaConfig, 'publishableKey' | 'subscriberId' | 'apiUrl' | 'pollingInterval' | 'locale'>>;
   labels: NotificaLabels;
   /** Fetch wrapper with auth headers. */
   apiFetch: <T = unknown>(path: string, options?: RequestInit) => Promise<T>;
@@ -81,11 +97,23 @@ export interface NotificaContextValue {
 // ── Component Props ──────────────────────────────────
 
 export interface NotificaProviderProps {
-  apiKey: string;
+  /** Publishable key (e.g. "pk_live_..." or "pk_test_..." for dev mode). */
+  publishableKey?: string;
+  /**
+   * @deprecated Use `publishableKey` instead. Will be removed in 0.3.0.
+   *
+   * Legacy API key — automatically mapped to `publishableKey` with a deprecation warning.
+   */
+  apiKey?: string;
+  /** Subscriber ID to scope notifications. */
   subscriberId: string;
+  /** Base API URL (default: "https://api.usenotifica.com.br") */
   apiUrl?: string;
+  /** Polling interval in ms (default: 30000) */
   pollingInterval?: number;
+  /** Locale for labels (default: "pt-BR") */
   locale?: NotificaLocale;
+  /** Partial label overrides for i18n. */
   labels?: Partial<NotificaLabels>;
   children: React.ReactNode;
 }

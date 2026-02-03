@@ -5,6 +5,7 @@ import type {
   NotificaLocale,
   NotificaProviderProps,
 } from './types';
+import { NotificaOriginError } from './types';
 import { lightTokens, tokensToCSS } from './styles/tokens';
 import { styles } from './styles/default-theme';
 
@@ -45,6 +46,10 @@ const LOCALE_MAP: Record<NotificaLocale, NotificaLabels> = {
 
 export const NotificaContext = createContext<NotificaContextValue | null>(null);
 
+// ── Deprecation tracking ─────────────────────────────
+
+let apiKeyDeprecationWarned = false;
+
 // ── Provider ─────────────────────────────────────────
 
 const DEFAULT_API_URL = 'https://api.usenotifica.com.br';
@@ -52,6 +57,7 @@ const DEFAULT_POLLING_INTERVAL = 30_000;
 const DEFAULT_LOCALE: NotificaLocale = 'pt-BR';
 
 export function NotificaProvider({
+  publishableKey,
   apiKey,
   subscriberId,
   apiUrl = DEFAULT_API_URL,
@@ -61,6 +67,31 @@ export function NotificaProvider({
   children,
 }: NotificaProviderProps): React.JSX.Element {
   const styleInjectedRef = useRef(false);
+
+  // ── Resolve publishableKey (with deprecated apiKey fallback) ──
+  const resolvedKey = useMemo(() => {
+    if (publishableKey) return publishableKey;
+
+    if (apiKey) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!apiKeyDeprecationWarned) {
+        apiKeyDeprecationWarned = true;
+        console.warn(
+          '[Notifica] The `apiKey` prop is deprecated and will be removed in 0.3.0. ' +
+            'Use `publishableKey` instead:\n\n' +
+            '  <NotificaProvider publishableKey="pk_live_..." subscriberId="..." />\n\n' +
+            'See: https://docs.usenotifica.com.br/sdks/react/migration'
+        );
+      }
+      return apiKey;
+    }
+
+    throw new Error(
+      '[Notifica] Missing `publishableKey` prop on <NotificaProvider>. ' +
+        'Get your publishable key from the Notifica dashboard.\n\n' +
+        '  <NotificaProvider publishableKey="pk_live_..." subscriberId="..." />'
+    );
+  }, [publishableKey, apiKey]);
 
   // Inject CSS custom properties and keyframes once
   useEffect(() => {
@@ -83,13 +114,13 @@ export function NotificaProvider({
 
   const config = useMemo(
     () => ({
-      apiKey,
+      publishableKey: resolvedKey,
       subscriberId,
       apiUrl: apiUrl.replace(/\/+$/, ''),
       pollingInterval,
       locale,
     }),
-    [apiKey, subscriberId, apiUrl, pollingInterval, locale]
+    [resolvedKey, subscriberId, apiUrl, pollingInterval, locale]
   );
 
   const labels = useMemo<NotificaLabels>(() => {
@@ -102,10 +133,21 @@ export function NotificaProvider({
     async <T = unknown>(path: string, options: RequestInit = {}): Promise<T> => {
       const url = `${config.apiUrl}${path}`;
       const headers = new Headers(options.headers);
-      headers.set('Authorization', `Bearer ${config.apiKey}`);
+
+      // New secure embed headers
+      headers.set('X-Notifica-Publishable-Key', config.publishableKey);
+      headers.set('X-Notifica-Subscriber-Id', config.subscriberId);
       headers.set('Content-Type', 'application/json');
 
       const res = await fetch(url, { ...options, headers });
+
+      // Handle origin restriction (403)
+      if (res.status === 403) {
+        const currentOrigin =
+          typeof window !== 'undefined' ? window.location.origin : 'unknown';
+
+        throw new NotificaOriginError(currentOrigin);
+      }
 
       if (!res.ok) {
         const errorBody = await res.text().catch(() => '');
@@ -116,7 +158,7 @@ export function NotificaProvider({
 
       return res.json() as Promise<T>;
     },
-    [config.apiUrl, config.apiKey]
+    [config.apiUrl, config.publishableKey, config.subscriberId]
   );
 
   const contextValue = useMemo<NotificaContextValue>(
