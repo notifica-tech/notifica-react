@@ -96,7 +96,7 @@ Provedor de contexto obrigatório. Deve envolver todos os componentes e hooks do
 <NotificaProvider
   publishableKey="pk_live_..."
   subscriberId="user_123"
-  apiUrl="https://api.usenotifica.com.br"  // opcional (padrão: https://api.usenotifica.com.br)
+  apiUrl="https://app.usenotifica.com.br"  // opcional (padrão: https://app.usenotifica.com.br)
   pollingInterval={30000}                   // opcional (padrão: 30s)
   locale="pt-BR"                            // opcional (padrão: "pt-BR")
   labels={{ notifications: 'Avisos' }}      // opcional (override parcial)
@@ -109,7 +109,7 @@ Provedor de contexto obrigatório. Deve envolver todos os componentes e hooks do
 |------|------|--------|-----------|
 | `publishableKey` | `string` | — | **Obrigatório.** Chave pública do Notifica (`pk_live_...` ou `pk_test_...`) |
 | `subscriberId` | `string` | — | **Obrigatório.** ID do assinante (subscriber) |
-| `apiUrl` | `string` | `https://api.usenotifica.com.br` | URL base da API |
+| `apiUrl` | `string` | `https://app.usenotifica.com.br` | URL base da API |
 | `pollingInterval` | `number` | `30000` | Intervalo de polling em ms (0 = desabilitar) |
 | `locale` | `'pt-BR' \| 'en'` | `'pt-BR'` | Locale para labels |
 | `labels` | `Partial<NotificaLabels>` | — | Override parcial de labels (veja seção i18n) |

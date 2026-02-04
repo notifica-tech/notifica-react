@@ -31,7 +31,7 @@ function AppComBell() {
     <NotificaProvider
       publishableKey="pk_live_sua_chave_aqui"
       subscriberId="user_123"
-      apiUrl="https://api.usenotifica.com.br"
+      apiUrl="https://app.usenotifica.com.br"
     >
       <header style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem' }}>
         <NotificaBell popoverPosition="bottom-right" />

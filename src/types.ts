@@ -44,7 +44,7 @@ export interface NotificaConfig {
   publishableKey: string;
   /** Subscriber ID to fetch notifications for */
   subscriberId: string;
-  /** Base API URL (default: "https://api.usenotifica.com.br") */
+  /** Base API URL (default: "https://app.usenotifica.com.br") */
   apiUrl?: string;
   /** Polling interval in ms (default: 30000) */
   pollingInterval?: number;
@@ -107,7 +107,7 @@ export interface NotificaProviderProps {
   apiKey?: string;
   /** Subscriber ID to scope notifications. */
   subscriberId: string;
-  /** Base API URL (default: "https://api.usenotifica.com.br") */
+  /** Base API URL (default: "https://app.usenotifica.com.br") */
   apiUrl?: string;
   /** Polling interval in ms (default: 30000) */
   pollingInterval?: number;

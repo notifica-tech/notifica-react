@@ -60,7 +60,7 @@ declare const process:
 
 // ── Provider ─────────────────────────────────────────
 
-const DEFAULT_API_URL = 'https://api.usenotifica.com.br';
+const DEFAULT_API_URL = 'https://app.usenotifica.com.br';
 const DEFAULT_POLLING_INTERVAL = 30_000;
 const DEFAULT_LOCALE: NotificaLocale = 'pt-BR';
 
